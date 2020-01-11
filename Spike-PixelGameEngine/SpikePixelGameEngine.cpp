@@ -97,14 +97,21 @@ public:
 	}
 
 	void CreateEnemies() {
-		const int kNumEnemies = 5;
+		const int kNumEnemiesX = 10;
+		const int kNumEnemiesY = 4;
 
-		for (int i = 0; i < kNumEnemies; i++) {
-			Enemy enemy;
-			enemy.sprite = new olc::Sprite("gfx//enemy_40pix.png");
-			enemy.position = { float(kScreenWidth / (kNumEnemies+1)) * (i+1), 100.0f };
-			enemy.position.x -= (enemy.sprite->width / 2.0f);
-			enemies.push_back(enemy);
+		const float kEnemySpacingX = float(kScreenWidth / (kNumEnemiesX + 1));
+		const float kEnemySpacingY = 50.0f;
+		const float kEnemyStartY = 30.0f;
+
+		for (int x = 0; x < kNumEnemiesX; x++) {
+			for (int y = 0; y < kNumEnemiesY; y++) {
+				Enemy enemy;
+				enemy.sprite = new olc::Sprite("gfx//enemy_40pix.png");
+				enemy.position = { kEnemySpacingX * (x + 1), kEnemyStartY + (kEnemySpacingY * y) };
+				enemy.position.x -= (enemy.sprite->width / 2.0f);
+				enemies.push_back(enemy);
+			}
 		}
 	}
 
@@ -186,9 +193,15 @@ public:
 	}
 
 	bool DetectBulletCollision(const Bullet& bullet) {
-		for (auto& enemy : enemies) {
+		for (auto it = enemies.begin(); it != enemies.end(); ) {
+			const Enemy& enemy = *it;
+
 			if (DetectBulletCollisionWithEnemy(bullet, enemy)) {
+				enemies.erase(it);
 				return true;
+			}
+			else {
+				it++;
 			}
 		}
 
