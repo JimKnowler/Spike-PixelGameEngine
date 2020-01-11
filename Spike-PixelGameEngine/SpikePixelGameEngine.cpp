@@ -10,6 +10,8 @@ namespace {
 	const int32_t kBulletWidth = 6;
 	const int32_t kBulletHeight = 6;
 	const float kMinTimeBetweenBullets = 0.1f;
+	const uint32_t kScreenWidth = 600;
+	const uint32_t kScreenHeight = 400;
 }
 
 class SpikePixelGame : public olc::PixelGameEngine
@@ -45,14 +47,31 @@ public:
 
 	std::vector<Bullet> bullets;
 
+	struct Enemy {
+		olc::Sprite* sprite;
+		olc::vf2d position;
+	};
+
+	std::vector<Enemy> enemies;
+
 public:
 	bool OnUserCreate() override
 	{
 		// Called once at the start, so create things here
 
-		player.sprite = new olc::Sprite("gfx//arwing_40pix.png");
-		player.position = { 100, 100 };
+		CreatePlayer();
 
+		CreateStars();
+
+		return true;
+	}
+
+	void CreatePlayer() {
+		player.sprite = new olc::Sprite("gfx//arwing_40pix.png");
+		player.position = { (kScreenWidth - player.sprite->width) / 2.0f, float(kScreenHeight - (player.sprite->width * 2)) };
+	}
+
+	void CreateStars() {
 		for (auto& star : stars) {
 			star.position = { float(rand() % ScreenWidth()), float(rand() % ScreenHeight()) };
 			switch (rand() % 3) {
@@ -73,8 +92,6 @@ public:
 				break;
 			}
 		}
-
-		return true;
 	}
 
 	bool OnUserUpdate(float fElapsedTime) override
@@ -184,7 +201,7 @@ public:
 int main()
 {
 	SpikePixelGame demo;
-	if (demo.Construct(500, 400, 2, 2))
+	if (demo.Construct(kScreenWidth, kScreenHeight, 2, 2))
 		demo.Start();
 
 	return 0;
