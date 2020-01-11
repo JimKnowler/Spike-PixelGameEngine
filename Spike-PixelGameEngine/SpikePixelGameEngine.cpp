@@ -54,6 +54,14 @@ public:
 
 	std::vector<Enemy> enemies;
 
+	struct Game {
+		Game() : score(0) {}
+
+		int score;
+	};
+
+	Game game;
+
 public:
 	bool OnUserCreate() override
 	{
@@ -64,6 +72,8 @@ public:
 		CreateStars();
 
 		CreateEnemies();
+
+		CreateGame();
 
 		return true;
 	}
@@ -113,6 +123,10 @@ public:
 				enemies.push_back(enemy);
 			}
 		}
+	}
+
+	void CreateGame() {
+		game.score = 0;
 	}
 
 	bool OnUserUpdate(float fElapsedTime) override
@@ -198,6 +212,8 @@ public:
 
 			if (DetectBulletCollisionWithEnemy(bullet, enemy)) {
 				enemies.erase(it);
+				game.score += 1;
+
 				return true;
 			}
 			else {
@@ -245,8 +261,13 @@ public:
 			FillRect(bullet.position, { kBulletWidth, kBulletHeight }, olc::Pixel(255,0,0));
 		}
 
-		
+		// render score
+		char buffer[32];
+		sprintf_s(buffer, "%d", game.score);
+		std::string strScore = "score: ";
+		strScore += buffer;
 
+		DrawString({ 10,10 }, strScore);
 	}
 
 	void EmitPlayerBullet() {
