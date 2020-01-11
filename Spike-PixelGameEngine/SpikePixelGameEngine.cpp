@@ -174,6 +174,34 @@ public:
 			}
 		}
 
+		// detect overlapping bullets + remove them
+		for (auto it = bullets.begin(); it != bullets.end(); ) {
+			if (DetectBulletCollision(*it)) {
+				it = bullets.erase(it);
+			}
+			else {
+				it++;
+			}
+		}
+	}
+
+	bool DetectBulletCollision(const Bullet& bullet) {
+		for (auto& enemy : enemies) {
+			if (DetectBulletCollisionWithEnemy(bullet, enemy)) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	bool DetectBulletCollisionWithEnemy(const Bullet& bullet, const Enemy& enemy) {
+		if ((bullet.position.x + kBulletWidth) < enemy.position.x) return false;
+		if (bullet.position.x > (enemy.position.x + enemy.sprite->width)) return false;
+		if ((bullet.position.y + kBulletHeight) < enemy.position.y) return false;
+		if (bullet.position.y > (enemy.position.y + enemy.sprite->height)) return false;
+
+		return true;
 	}
 
 	void RenderGame() {
