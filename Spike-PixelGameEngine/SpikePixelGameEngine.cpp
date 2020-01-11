@@ -63,6 +63,8 @@ public:
 
 		CreateStars();
 
+		CreateEnemies();
+
 		return true;
 	}
 
@@ -91,6 +93,18 @@ public:
 				star.size = 1;
 				break;
 			}
+		}
+	}
+
+	void CreateEnemies() {
+		const int kNumEnemies = 5;
+
+		for (int i = 0; i < kNumEnemies; i++) {
+			Enemy enemy;
+			enemy.sprite = new olc::Sprite("gfx//enemy_40pix.png");
+			enemy.position = { float(kScreenWidth / (kNumEnemies+1)) * (i+1), 100.0f };
+			enemy.position.x -= (enemy.sprite->width / 2.0f);
+			enemies.push_back(enemy);
 		}
 	}
 
@@ -176,10 +190,21 @@ public:
 		DrawSprite(player.position, player.sprite, 1);
 		SetPixelMode(olc::Pixel::NORMAL);
 
+		// render enemies
+		SetPixelMode(olc::Pixel::ALPHA);
+
+		for (auto& enemy : enemies) {
+			DrawSprite(enemy.position, enemy.sprite);
+		}
+		SetPixelMode(olc::Pixel::NORMAL);
+
+
 		// render bullets
 		for (auto& bullet : bullets) {
 			FillRect(bullet.position, { kBulletWidth, kBulletHeight }, olc::Pixel(255,0,0));
 		}
+
+		
 
 	}
 
