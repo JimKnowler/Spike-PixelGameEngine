@@ -826,7 +826,7 @@ namespace olc
 		{
 			// Load sprite from input stream
 			ResourceBuffer rb = pack->GetFileBuffer(sImageFile);
-			bmp = Gdiplus::Bitmap::FromStream(SHCreateMemStream((BYTE*)rb.vMemory.data(), rb.vMemory.size()));
+			bmp = Gdiplus::Bitmap::FromStream(SHCreateMemStream((BYTE*)rb.vMemory.data(), UINT(rb.vMemory.size())));
 		}
 		else
 		{
@@ -1085,7 +1085,7 @@ namespace olc
 		// Iterate through map
 		uint32_t nIndexSize = 0; // Unknown for now
 		ofs.write((char*)&nIndexSize, sizeof(uint32_t));
-		uint32_t nMapSize = mapFiles.size();
+		uint32_t nMapSize = uint32_t(mapFiles.size());
 		ofs.write((char*)&nMapSize, sizeof(uint32_t));
 		for (auto &e : mapFiles)
 		{
