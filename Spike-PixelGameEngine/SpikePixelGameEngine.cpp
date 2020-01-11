@@ -19,8 +19,12 @@ public:
 		sAppName = "Spike Pixel Game";
 	}
 
-	olc::Sprite* spriteShip;
-	olc::vf2d positionShip;
+	struct Player {
+		olc::Sprite* sprite;
+		olc::vf2d position;
+	};
+
+	Player player;
 	
 	struct Star {
 		olc::vf2d position;
@@ -42,8 +46,8 @@ public:
 	{
 		// Called once at the start, so create things here
 
-		spriteShip = new olc::Sprite("gfx//arwing_40pix.png");
-		positionShip = { 100, 100 };
+		player.sprite = new olc::Sprite("gfx//arwing_40pix.png");
+		player.position = { 100, 100 };
 
 		for (auto& star : stars) {
 			star.position = { float(rand() % ScreenWidth()), float(rand() % ScreenHeight()) };
@@ -89,31 +93,31 @@ public:
 
 		// update spaceship position
 		if (GetKey(olc::LEFT).bHeld) {
-			positionShip.x -= kSpeedShip * fElapsedTime;
+			player.position.x -= kSpeedShip * fElapsedTime;
 		}
 
 		if (GetKey(olc::RIGHT).bHeld) {
-			positionShip.x += kSpeedShip * fElapsedTime;
+			player.position.x += kSpeedShip * fElapsedTime;
 		}
 
 		if (GetKey(olc::UP).bHeld) {
-			positionShip.y -= kSpeedShip * fElapsedTime;
+			player.position.y -= kSpeedShip * fElapsedTime;
 		}
 
 		if (GetKey(olc::DOWN).bHeld) {
-			positionShip.y += kSpeedShip * fElapsedTime;
+			player.position.y += kSpeedShip * fElapsedTime;
 		}
 
-		positionShip.x = std::clamp(positionShip.x, 0.0f, float(ScreenWidth() - spriteShip->width));
-		positionShip.y = std::clamp(positionShip.y, 0.0f, float(ScreenHeight() - spriteShip->height));
+		player.position.x = std::clamp(player.position.x, 0.0f, float(ScreenWidth() - player.sprite->width));
+		player.position.y = std::clamp(player.position.y, 0.0f, float(ScreenHeight() - player.sprite->height));
 
 		// trigger bullets
 		if (GetKey(olc::SPACE).bPressed) {
 			Bullet bullet;
-			bullet.position = positionShip;
+			bullet.position = player.position;
 
 			// adjust position for center of ship
-			bullet.position.x += spriteShip->width / 2;
+			bullet.position.x += player.sprite->width / 2;
 
 			// adjust position for center of bullet
 			bullet.position.x -= kBulletWidth / 2;
@@ -148,7 +152,7 @@ public:
 
 		// render ship
 		SetPixelMode(olc::Pixel::ALPHA);
-		DrawSprite(positionShip, spriteShip, 1);
+		DrawSprite(player.position, player.sprite, 1);
 		SetPixelMode(olc::Pixel::NORMAL);
 
 		// render bullets
