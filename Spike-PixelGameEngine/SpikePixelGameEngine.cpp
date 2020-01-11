@@ -9,6 +9,7 @@ namespace {
 	const float kSpeedBullet = 1000.0f;
 	const int32_t kBulletWidth = 6;
 	const int32_t kBulletHeight = 6;
+	const float kMinTimeBetweenBullets = 0.1f;
 }
 
 class SpikePixelGame : public olc::PixelGameEngine
@@ -20,8 +21,11 @@ public:
 	}
 
 	struct Player {
+		Player() : timeSinceLastShot(0.0f) {}
+
 		olc::Sprite* sprite;
 		olc::vf2d position;
+		float timeSinceLastShot;
 	};
 
 	Player player;
@@ -111,20 +115,19 @@ public:
 		player.position.x = std::clamp(player.position.x, 0.0f, float(ScreenWidth() - player.sprite->width));
 		player.position.y = std::clamp(player.position.y, 0.0f, float(ScreenHeight() - player.sprite->height));
 
+
+		// update player
+		player.timeSinceLastShot += fElapsedTime;
+
 		// trigger bullets
-		if (GetKey(olc::SPACE).bPressed) {
-			Bullet bullet;
-			bullet.position = player.position;
+		if (GetKey(olc::SPACE).bHeld) {
+			if (player.timeSinceLastShot >= kMinTimeBetweenBullets) {
+				player.timeSinceLastShot = 0.0f;
 
-			// adjust position for center of ship
-			bullet.position.x += player.sprite->width / 2;
-
-			// adjust position for center of bullet
-			bullet.position.x -= kBulletWidth / 2;
-
-			bullets.push_back(bullet);
+				EmitPlayerBullet();
+			}
 		}
-
+		
 		// update position of bullets
 		for (auto& bullet : bullets) {
 			bullet.position.y -= kSpeedBullet * fElapsedTime;
@@ -139,6 +142,7 @@ public:
 				it++;
 			}
 		}
+
 	}
 
 	void RenderGame() {
@@ -160,6 +164,19 @@ public:
 			FillRect(bullet.position, { kBulletWidth, kBulletHeight }, olc::Pixel(255,0,0));
 		}
 
+	}
+
+	void EmitPlayerBullet() {
+		Bullet bullet;
+		bullet.position = player.position;
+
+		// adjust position for center of ship
+		bullet.position.x += player.sprite->width / 2;
+
+		// adjust position for center of bullet
+		bullet.position.x -= kBulletWidth / 2;
+
+		bullets.push_back(bullet);
 	}
 };
 
