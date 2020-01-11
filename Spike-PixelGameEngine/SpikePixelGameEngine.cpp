@@ -7,6 +7,8 @@ namespace {
 	const uint32_t kNumStars = 100;
 	const float kSpeedShip = 200.0f;
 	const float kSpeedBullet = 1000.0f;
+	const int32_t kBulletWidth = 6;
+	const int32_t kBulletHeight = 6;
 }
 
 class SpikePixelGame : public olc::PixelGameEngine
@@ -109,8 +111,12 @@ public:
 		if (GetKey(olc::SPACE).bPressed) {
 			Bullet bullet;
 			bullet.position = positionShip;
+
 			// adjust position for center of ship
 			bullet.position.x += spriteShip->width / 2;
+
+			// adjust position for center of bullet
+			bullet.position.x -= kBulletWidth / 2;
 
 			bullets.push_back(bullet);
 		}
@@ -147,7 +153,7 @@ public:
 
 		// render bullets
 		for (auto& bullet : bullets) {
-			FillRect(bullet.position, { 6, 6 }, olc::Pixel(255,0,0));
+			FillRect(bullet.position, { kBulletWidth, kBulletHeight }, olc::Pixel(255,0,0));
 		}
 
 	}
