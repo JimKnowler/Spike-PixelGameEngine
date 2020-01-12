@@ -312,13 +312,13 @@ public:
 		
 		// starting at position
 
-		for (int i = 0; i < 50; i++) {
+		for (int i = 0; i < 100; i++) {
 
 			// random velocity
 			olc::vf2d velocity = olc::vf2d{ float(rand() % 0x7ff) - 0x7ff/2.0f, float(rand() % 0x7ff) - 0x7ff/2.0f } * (400.0f / float(0x7ff));
 
 			// random lifespan
-			float lifespan = (rand() % 0x7ff) * ( 5.0f / float(0x7ff));
+			float lifespan = (rand() % 0x7ff) * ( 3.0f / float(0x7ff));
 
 			// fading out over time
 
