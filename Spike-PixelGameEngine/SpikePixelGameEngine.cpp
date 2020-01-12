@@ -63,6 +63,14 @@ public:
 
 	Game game;
 
+	struct Particle {
+		float lifespan;
+		float elapsed;
+		olc::vf2d velocity;
+		olc::vf2d position;
+	};
+
+	std::list<Particle> particles;
 public:
 	bool OnUserCreate() override
 	{
@@ -191,6 +199,18 @@ public:
 			std::remove_if(bullets.begin(), bullets.end(), [&](const Bullet& bullet) -> bool { return IsBulletOffscreen(bullet) || HasBulletCollided(bullet); }),
 			bullets.end()
 		);
+
+		// update particles
+		for (auto& particle : particles) {
+			particle.elapsed += fElapsedTime;
+			particle.position += (particle.velocity * fElapsedTime);
+		}
+
+		// remove stale particles
+		particles.erase(
+			std::remove_if(particles.begin(), particles.end(), [&](const Particle& particle) -> bool { return particle.elapsed >= particle.lifespan; }),
+			particles.end()
+		);
 	}
 
 	bool IsBulletOffscreen(const Bullet& bullet) {
@@ -202,8 +222,8 @@ public:
 			const Enemy& enemy = *it;
 
 			if (HasBulletCollidedWithEnemy(bullet, enemy)) {
+				OnEnemyDestroyed(enemy);
 				enemies.erase(it);
-				game.score += 1;
 
 				return true;
 			}
@@ -213,6 +233,14 @@ public:
 		}
 
 		return false;
+	}
+
+	void OnEnemyDestroyed(const Enemy& enemy) {
+		game.score += 1;
+
+		olc::vf2d center = enemy.position + (olc::vf2d{ float(enemy.sprite->width), float(enemy.sprite->height) } * 0.5f);
+
+		SpawnParticles(center);
 	}
 
 	bool HasBulletCollidedWithEnemy(const Bullet& bullet, const Enemy& enemy) {
@@ -233,17 +261,21 @@ public:
 			FillRect(star.position, {star.size, star.size}, star.pixel);
 		}
 
-		// render ship
 		SetPixelMode(olc::Pixel::ALPHA);
+
+		// render particles
+		for (auto& particle : particles) {
+			FillRect(particle.position, { 4, 4 }, olc::Pixel(255, 0, 255, 255 - uint8_t(255.0f * particle.elapsed / particle.lifespan)));
+		}
+
+		// render ship
 		DrawSprite(player.position, player.sprite, 1);
-		SetPixelMode(olc::Pixel::NORMAL);
 
 		// render enemies
-		SetPixelMode(olc::Pixel::ALPHA);
-
 		for (auto& enemy : enemies) {
 			DrawSprite(enemy.position, enemy.sprite);
 		}
+
 		SetPixelMode(olc::Pixel::NORMAL);
 
 
@@ -274,6 +306,30 @@ public:
 		bullet.velocity = { 0, -kSpeedBullet };
 
 		bullets.push_back(bullet);
+	}
+
+	void SpawnParticles(const olc::vf2d& position) {
+		
+		// starting at position
+
+		for (int i = 0; i < 50; i++) {
+
+			// random velocity
+			olc::vf2d velocity = olc::vf2d{ float(rand() % 0x7ff) - 0x7ff/2.0f, float(rand() % 0x7ff) - 0x7ff/2.0f } * (400.0f / float(0x7ff));
+
+			// random lifespan
+			float lifespan = (rand() % 0x7ff) * ( 5.0f / float(0x7ff));
+
+			// fading out over time
+
+			Particle particle;
+			particle.position = position;
+			particle.lifespan = lifespan;
+			particle.elapsed = 0.0f;
+			particle.velocity = velocity;
+
+			particles.push_back(particle);
+		}
 	}
 };
 
