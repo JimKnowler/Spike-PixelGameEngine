@@ -197,7 +197,7 @@ public:
 
 		// detect overlapping bullets + remove them
 		for (auto it = bullets.begin(); it != bullets.end(); ) {
-			if (DetectBulletCollision(*it)) {
+			if (HasBulletCollided(*it)) {
 				it = bullets.erase(it);
 			}
 			else {
@@ -206,11 +206,11 @@ public:
 		}
 	}
 
-	bool DetectBulletCollision(const Bullet& bullet) {
+	bool HasBulletCollided(const Bullet& bullet) {
 		for (auto it = enemies.begin(); it != enemies.end(); ) {
 			const Enemy& enemy = *it;
 
-			if (DetectBulletCollisionWithEnemy(bullet, enemy)) {
+			if (HasBulletCollidedWithEnemy(bullet, enemy)) {
 				enemies.erase(it);
 				game.score += 1;
 
@@ -224,7 +224,7 @@ public:
 		return false;
 	}
 
-	bool DetectBulletCollisionWithEnemy(const Bullet& bullet, const Enemy& enemy) {
+	bool HasBulletCollidedWithEnemy(const Bullet& bullet, const Enemy& enemy) {
 		if ((bullet.position.x + kBulletWidth) < enemy.position.x) return false;
 		if (bullet.position.x > (enemy.position.x + enemy.sprite->width)) return false;
 		if ((bullet.position.y + kBulletHeight) < enemy.position.y) return false;
