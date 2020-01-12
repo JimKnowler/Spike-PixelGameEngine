@@ -43,16 +43,17 @@ public:
 
 	struct Bullet {
 		olc::vf2d position;
+		olc::vf2d velocity;
 	};
 
-	std::vector<Bullet> bullets;
+	std::list<Bullet> bullets;
 
 	struct Enemy {
 		olc::Sprite* sprite;
 		olc::vf2d position;
 	};
 
-	std::vector<Enemy> enemies;
+	std::list<Enemy> enemies;
 
 	struct Game {
 		Game() : score(0) {}
@@ -182,28 +183,18 @@ public:
 		
 		// update position of bullets
 		for (auto& bullet : bullets) {
-			bullet.position.y -= kSpeedBullet * fElapsedTime;
+			bullet.position += (bullet.velocity * fElapsedTime);
 		}
 
 		// remove offscreen bullets
-		for (auto it = bullets.begin(); it != bullets.end(); ) {
-			if (it->position.y < 0) {
-				it = bullets.erase(it);
-			}
-			else {
-				it++;
-			}
-		}
+		bullets.erase(
+			std::remove_if(bullets.begin(), bullets.end(), [&](const Bullet& bullet) -> bool { return IsBulletOffscreen(bullet) || HasBulletCollided(bullet); }),
+			bullets.end()
+		);
+	}
 
-		// detect overlapping bullets + remove them
-		for (auto it = bullets.begin(); it != bullets.end(); ) {
-			if (HasBulletCollided(*it)) {
-				it = bullets.erase(it);
-			}
-			else {
-				it++;
-			}
-		}
+	bool IsBulletOffscreen(const Bullet& bullet) {
+		return bullet.position.y < 0;
 	}
 
 	bool HasBulletCollided(const Bullet& bullet) {
@@ -279,6 +270,8 @@ public:
 
 		// adjust position for center of bullet
 		bullet.position.x -= kBulletWidth / 2;
+
+		bullet.velocity = { 0, -kSpeedBullet };
 
 		bullets.push_back(bullet);
 	}
