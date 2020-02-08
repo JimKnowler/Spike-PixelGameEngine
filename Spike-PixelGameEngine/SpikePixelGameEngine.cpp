@@ -58,11 +58,16 @@ public:
 	};
 
 	struct Player : public CollidableSprite {
-		Player() : timeSinceLastShot(0.0f) {}
+		Player() : timeSinceLastShot(0.0f), state(State::ALIVE) {}
 
-		olc::Sprite* sprite;
-		olc::vf2d position;
 		float timeSinceLastShot;
+
+		enum class State {
+			ALIVE,
+			DEAD
+		};
+
+		State state;
 	};
 
 	Player player;
@@ -197,6 +202,16 @@ public:
 			}
 		}
 
+		UpdatePlayer(fElapsedTime);
+
+		UpdateBullets(fElapsedTime);
+	}
+
+	void UpdatePlayer(float fElapsedTime) {
+		if (player.state != Player::State::ALIVE) {
+			return;
+		}
+
 		// update spaceship position
 		if (GetKey(olc::LEFT).bHeld) {
 			player.position.x -= kSpeedShip * fElapsedTime;
@@ -217,10 +232,23 @@ public:
 		player.position.x = std::clamp(player.position.x, 0.0f, float(ScreenWidth() - player.sprite->width));
 		player.position.y = std::clamp(player.position.y, 0.0f, float(ScreenHeight() - player.sprite->height));
 
-
-		// update player
+		// update player shooting limiter
 		player.timeSinceLastShot += fElapsedTime;
 
+		// check collision of player with enemy
+		for (auto& enemy : enemies) {
+			if (enemy.hasCollidedWith(player)) {
+				player.state = Player::State::DEAD;
+
+				// spawn particles
+				olc::vf2d center = player.position + (player.getDimensions() / 2);
+
+				SpawnParticles(center);
+			}
+		}
+	}
+
+	void UpdateBullets(float fElapsedTime) {
 		// trigger bullets
 		if (GetKey(olc::SPACE).bHeld) {
 			if (player.timeSinceLastShot >= kMinTimeBetweenBullets) {
@@ -301,7 +329,9 @@ public:
 		}
 
 		// render ship
-		DrawSprite(player.position, player.sprite, 1);
+		if (player.state == Player::State::ALIVE) {
+			DrawSprite(player.position, player.sprite, 1);
+		}
 
 		// render enemies
 		for (auto& enemy : enemies) {
