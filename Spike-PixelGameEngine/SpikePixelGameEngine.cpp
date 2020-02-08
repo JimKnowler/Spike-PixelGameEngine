@@ -22,7 +22,42 @@ public:
 		sAppName = "Spike Pixel Game";
 	}
 
-	struct Player {
+	struct Collidable {
+		olc::vf2d position;
+
+		virtual olc::vi2d getDimensions() const = 0;
+
+		bool hasCollidedWith(const Collidable& other) const {
+			olc::vi2d dimensions = getDimensions();
+			olc::vi2d dimensionsOther = other.getDimensions();
+			olc::vf2d positionOther = other.position;
+
+			// AABB collision
+
+			if ((position.x + dimensions.x) < positionOther.x) return false;
+			if (position.x > (positionOther.x + dimensionsOther.x)) return false;
+			if ((position.y + dimensions.y) < positionOther.y) return false;
+			if (position.y > (positionOther.y + dimensionsOther.y)) return false;
+
+			return true;
+		}
+	};
+
+	struct CollidableSprite : public Collidable {
+		olc::Sprite* sprite;
+
+	public: // Collidable
+		olc::vi2d getDimensions() const override {
+			if (sprite) {
+				return { sprite->width, sprite->height };
+			}
+			else {
+				return { 0, 0 };
+			}
+		}
+	};
+
+	struct Player : public CollidableSprite {
 		Player() : timeSinceLastShot(0.0f) {}
 
 		olc::Sprite* sprite;
@@ -31,6 +66,8 @@ public:
 	};
 
 	Player player;
+	
+
 	
 	struct Star {
 		olc::vf2d position;
@@ -41,16 +78,20 @@ public:
 	
 	Star stars[kNumStars];
 
-	struct Bullet {
-		olc::vf2d position;
+	struct Bullet : public Collidable {
 		olc::vf2d velocity;
+
+	public:
+		// Collidable
+		olc::vi2d getDimensions() const override {
+			return { kBulletWidth, kBulletHeight };
+		}
 	};
 
 	std::list<Bullet> bullets;
 
-	struct Enemy {
-		olc::Sprite* sprite;
-		olc::vf2d position;
+	struct Enemy : public CollidableSprite {
+		
 	};
 
 	std::list<Enemy> enemies;
@@ -221,7 +262,7 @@ public:
 		for (auto it = enemies.begin(); it != enemies.end(); ) {
 			const Enemy& enemy = *it;
 
-			if (HasBulletCollidedWithEnemy(bullet, enemy)) {
+			if (bullet.hasCollidedWith(enemy)) {
 				OnEnemyDestroyed(enemy);
 				enemies.erase(it);
 
@@ -241,15 +282,6 @@ public:
 		olc::vf2d center = enemy.position + (olc::vf2d{ float(enemy.sprite->width), float(enemy.sprite->height) } * 0.5f);
 
 		SpawnParticles(center);
-	}
-
-	bool HasBulletCollidedWithEnemy(const Bullet& bullet, const Enemy& enemy) {
-		if ((bullet.position.x + kBulletWidth) < enemy.position.x) return false;
-		if (bullet.position.x > (enemy.position.x + enemy.sprite->width)) return false;
-		if ((bullet.position.y + kBulletHeight) < enemy.position.y) return false;
-		if (bullet.position.y > (enemy.position.y + enemy.sprite->height)) return false;
-
-		return true;
 	}
 
 	void RenderGame() {
