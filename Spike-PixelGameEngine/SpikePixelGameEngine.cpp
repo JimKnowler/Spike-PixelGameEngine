@@ -1,6 +1,9 @@
 #define OLC_PGE_APPLICATION
 #include "olcPixelGameEngine.h"
 
+#define OLC_PGE_GAMEPAD
+#include "olcPGEX_Gamepad.h"
+
 #include <algorithm>
 
 namespace {
@@ -112,10 +115,15 @@ public:
 	};
 
 	std::list<Particle> particles;
+
+	olc::GamePad gamepad;
+	std::vector<olc::GamePad> gamepads;
 public:
 	bool OnUserCreate() override
 	{
 		// Called once at the start, so create things here
+
+		CreateGamePads();
 
 		CreatePlayer();
 
@@ -126,6 +134,14 @@ public:
 		CreateGame();
 
 		return true;
+	}
+
+	void CreateGamePads() {
+		olc::GamePad::init();
+		gamepads = olc::GamePad::getGamepads();
+		if (!gamepads.empty()) {
+			gamepad = gamepads[0];
+		}
 	}
 
 	void CreatePlayer() {
@@ -198,31 +214,34 @@ public:
 		}
 
 		// update spaceship position
-		if (GetKey(olc::LEFT).bHeld) {
+		if (gamepad.valid) {
+			gamepad.poll();
+		}
+		
+		if (GetKey(olc::LEFT).bHeld || gamepad.getButton(olc::GPButtons::DPAD_L).bHeld) {
 			player.position.x -= kSpeedShip * fElapsedTime;
 		}
 
-		if (GetKey(olc::RIGHT).bHeld) {
+		if (GetKey(olc::RIGHT).bHeld || gamepad.getButton(olc::GPButtons::DPAD_R).bHeld) {
 			player.position.x += kSpeedShip * fElapsedTime;
 		}
 
-		if (GetKey(olc::UP).bHeld) {
+		if (GetKey(olc::UP).bHeld || gamepad.getButton(olc::GPButtons::DPAD_U).bHeld) {
 			player.position.y -= kSpeedShip * fElapsedTime;
 		}
 
-		if (GetKey(olc::DOWN).bHeld) {
+		if (GetKey(olc::DOWN).bHeld || gamepad.getButton(olc::GPButtons::DPAD_D).bHeld) {
 			player.position.y += kSpeedShip * fElapsedTime;
 		}
 
 		player.position.x = std::clamp(player.position.x, 0.0f, float(ScreenWidth() - player.sprite->width));
 		player.position.y = std::clamp(player.position.y, 0.0f, float(ScreenHeight() - player.sprite->height));
 
-
 		// update player
 		player.timeSinceLastShot += fElapsedTime;
 
 		// trigger bullets
-		if (GetKey(olc::SPACE).bHeld) {
+		if (GetKey(olc::SPACE).bHeld || gamepad.getButton(olc::GPButtons::FACE_D).bHeld) {
 			if (player.timeSinceLastShot >= kMinTimeBetweenBullets) {
 				player.timeSinceLastShot = 0.0f;
 
