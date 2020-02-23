@@ -120,7 +120,12 @@ public:
 			Restart();
 		}
 
-		starField.update(*this, fElapsedTime);
+		const int kMaxScore = 50;
+		const float progressNormalised = float(std::min(game.score, kMaxScore)) / float(kMaxScore);
+		
+		float starFieldSpeed = 1.0f + (9.0f * progressNormalised);
+
+		starField.update(*this, fElapsedTime * starFieldSpeed);
 
 		UpdatePlayer(fElapsedTime);
 
