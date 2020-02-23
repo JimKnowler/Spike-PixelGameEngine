@@ -56,9 +56,7 @@ public:
 
 		CreateStars();
 
-		CreateEnemies();
-
-		CreateGame();
+		Restart();
 
 		return true;
 	}
@@ -73,7 +71,6 @@ public:
 
 	void CreatePlayer() {
 		player.sprite = new olc::Sprite("gfx//arwing_40pix.png");
-		player.position = { (kScreenWidth - player.sprite->width) / 2.0f, float(kScreenHeight - (player.sprite->width * 2)) };
 	}
 
 	void CreateStars() {
@@ -99,10 +96,6 @@ public:
 		}
 	}
 
-	void CreateGame() {
-		game.score = 0;
-	}
-
 	bool OnUserUpdate(float fElapsedTime) override
 	{
 		UpdateGame(fElapsedTime);
@@ -112,7 +105,21 @@ public:
 		return true;
 	}
 
+	void Restart() {
+		enemies.clear();
+		CreateEnemies();
+
+		player.position = { (kScreenWidth - player.sprite->width) / 2.0f, float(kScreenHeight - (player.sprite->width * 2)) };
+		player.state = actor::Player::State::ALIVE;
+
+		game.score = 0;
+	}
+
 	void UpdateGame(float fElapsedTime) {
+		if (GetKey(olc::ESCAPE).bPressed) {
+			Restart();
+		}
+
 		starField.update(*this, fElapsedTime);
 
 		UpdatePlayer(fElapsedTime);
