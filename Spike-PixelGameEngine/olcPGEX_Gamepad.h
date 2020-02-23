@@ -12,6 +12,7 @@ Zleapingbear
 Thx for KrossX for giving me a link to his original work, which helped solve a few problems
 */
 
+
 #include "olcPixelGameEngine.h"
 #include <vector>
 #include <string>
@@ -22,6 +23,7 @@ Thx for KrossX for giving me a link to his original work, which helped solve a f
 #define OLC_PGEX_GAMEPAD
 
 #ifdef WIN32
+#define DIRECTINPUT_VERSION 0x0800
 #include <dinput.h>
 #pragma comment (lib, "dinput8.lib")
 #pragma comment (lib, "dxguid.lib")
@@ -496,7 +498,7 @@ void olc::GamePad::poll() {
 			XINPUT_GAMEPAD_DPAD_DOWN,
 		};
 
-		for (size_t i = 0; i < sizeof(buttonCodes) / sizeof(WORD); i++) {
+		for (int i = 0; i < sizeof(buttonCodes) / sizeof(WORD); i++) {
 			bool pressed = state.Gamepad.wButtons & buttonCodes[i];
 			handleButton(i, pressed);
 		}
