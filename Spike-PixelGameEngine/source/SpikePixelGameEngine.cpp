@@ -6,12 +6,17 @@
 
 #include <algorithm>
 
+#include "actor/Player.h"
+#include "actor/Bullet.h"
+#include "actor/Enemy.h"
+
+#include "vfx/Star.h"
+#include "vfx/ParticleSystem.h"
+
 namespace {
 	const uint32_t kNumStars = 100;
 	const float kSpeedShip = 200.0f;
 	const float kSpeedBullet = 1000.0f;
-	const int32_t kBulletWidth = 6;
-	const int32_t kBulletHeight = 6;
 	const float kMinTimeBetweenBullets = 0.1f;
 	const uint32_t kScreenWidth = 600;
 	const uint32_t kScreenHeight = 400;
@@ -25,84 +30,10 @@ public:
 		sAppName = "Spike Pixel Game";
 	}
 
-	struct Collidable {
-		olc::vf2d position;
-
-		virtual olc::vi2d getDimensions() const = 0;
-
-		bool hasCollidedWith(const Collidable& other) const {
-			olc::vi2d dimensions = getDimensions();
-			olc::vi2d dimensionsOther = other.getDimensions();
-			olc::vf2d positionOther = other.position;
-
-			// AABB collision
-
-			if ((position.x + dimensions.x) < positionOther.x) return false;
-			if (position.x > (positionOther.x + dimensionsOther.x)) return false;
-			if ((position.y + dimensions.y) < positionOther.y) return false;
-			if (position.y > (positionOther.y + dimensionsOther.y)) return false;
-
-			return true;
-		}
-	};
-
-	struct CollidableSprite : public Collidable {
-		olc::Sprite* sprite;
-
-	public: // Collidable
-		olc::vi2d getDimensions() const override {
-			if (sprite) {
-				return { sprite->width, sprite->height };
-			}
-			else {
-				return { 0, 0 };
-			}
-		}
-	};
-
-	struct Player : public CollidableSprite {
-		Player() : timeSinceLastShot(0.0f), state(State::ALIVE) {}
-
-		float timeSinceLastShot;
-
-		enum class State {
-			ALIVE,
-			DEAD
-		};
-
-		State state;
-	};
-
-	Player player;
-	
-
-	
-	struct Star {
-		olc::vf2d position;
-		olc::Pixel pixel;
-		float speed;
-		int size;
-	};
-	
-	Star stars[kNumStars];
-
-	struct Bullet : public Collidable {
-		olc::vf2d velocity;
-
-	public:
-		// Collidable
-		olc::vi2d getDimensions() const override {
-			return { kBulletWidth, kBulletHeight };
-		}
-	};
-
-	std::list<Bullet> bullets;
-
-	struct Enemy : public CollidableSprite {
-		
-	};
-
-	std::list<Enemy> enemies;
+	actor::Player player;
+	vfx::Star stars[kNumStars];
+	std::list<actor::Bullet> bullets;
+	std::list<actor::Enemy> enemies;
 
 	struct Game {
 		Game() : score(0) {}
@@ -112,15 +43,7 @@ public:
 
 	Game game;
 
-	struct Particle {
-		float lifespan;
-		float elapsed;
-		olc::vf2d velocity;
-		olc::vf2d position;
-	};
-
-	std::list<Particle> particles;
-
+	vfx::ParticleSystem particleSystem;
 	olc::GamePad gamepad;
 	std::vector<olc::GamePad> gamepads;
 public:
@@ -187,7 +110,7 @@ public:
 
 		for (int x = 0; x < kNumEnemiesX; x++) {
 			for (int y = 0; y < kNumEnemiesY; y++) {
-				Enemy enemy;
+				actor::Enemy enemy;
 				enemy.sprite = new olc::Sprite("gfx//enemy_40pix.png");
 				enemy.position = { kEnemySpacingX * (x + 1), kEnemyStartY + (kEnemySpacingY * y) };
 				enemy.position.x -= (enemy.sprite->width / 2.0f);
@@ -224,7 +147,7 @@ public:
 	}
 
 	void UpdatePlayer(float fElapsedTime) {
-		if (player.state != Player::State::ALIVE) {
+		if (player.state != actor::Player::State::ALIVE) {
 			return;
 		}
 
@@ -258,12 +181,12 @@ public:
 		// check collision of player with enemy
 		for (auto& enemy : enemies) {
 			if (enemy.hasCollidedWith(player)) {
-				player.state = Player::State::DEAD;
+				player.state = actor::Player::State::DEAD;
 
 				// spawn particles
 				olc::vf2d center = player.position + (player.getDimensions() / 2);
 
-				SpawnParticles(center);
+				particleSystem.spawnExplosion(center);
 			}
 		}
 	}
@@ -285,30 +208,20 @@ public:
 
 		// remove offscreen bullets
 		bullets.erase(
-			std::remove_if(bullets.begin(), bullets.end(), [&](const Bullet& bullet) -> bool { return IsBulletOffscreen(bullet) || HasBulletCollided(bullet); }),
+			std::remove_if(bullets.begin(), bullets.end(), [&](const actor::Bullet& bullet) -> bool { return IsBulletOffscreen(bullet) || HasBulletCollided(bullet); }),
 			bullets.end()
 		);
 
-		// update particles
-		for (auto& particle : particles) {
-			particle.elapsed += fElapsedTime;
-			particle.position += (particle.velocity * fElapsedTime);
-		}
-
-		// remove stale particles
-		particles.erase(
-			std::remove_if(particles.begin(), particles.end(), [&](const Particle& particle) -> bool { return particle.elapsed >= particle.lifespan; }),
-			particles.end()
-		);
+		particleSystem.update(fElapsedTime);
 	}
 
-	bool IsBulletOffscreen(const Bullet& bullet) {
+	bool IsBulletOffscreen(const actor::Bullet& bullet) {
 		return bullet.position.y < 0;
 	}
 
-	bool HasBulletCollided(const Bullet& bullet) {
+	bool HasBulletCollided(const actor::Bullet& bullet) {
 		for (auto it = enemies.begin(); it != enemies.end(); ) {
-			const Enemy& enemy = *it;
+			const actor::Enemy& enemy = *it;
 
 			if (bullet.hasCollidedWith(enemy)) {
 				OnEnemyDestroyed(enemy);
@@ -324,12 +237,12 @@ public:
 		return false;
 	}
 
-	void OnEnemyDestroyed(const Enemy& enemy) {
+	void OnEnemyDestroyed(const actor::Enemy& enemy) {
 		game.score += 1;
 
 		olc::vf2d center = enemy.position + (olc::vf2d{ float(enemy.sprite->width), float(enemy.sprite->height) } * 0.5f);
 
-		SpawnParticles(center);
+		particleSystem.spawnExplosion(center);
 	}
 
 	void RenderGame() {
@@ -343,13 +256,10 @@ public:
 
 		SetPixelMode(olc::Pixel::ALPHA);
 
-		// render particles
-		for (auto& particle : particles) {
-			FillRect(particle.position, { 4, 4 }, olc::Pixel(255, 0, 255, 255 - uint8_t(255.0f * particle.elapsed / particle.lifespan)));
-		}
+		particleSystem.render(*this);
 
 		// render ship
-		if (player.state == Player::State::ALIVE) {
+		if (player.state == actor::Player::State::ALIVE) {
 			DrawSprite(player.position, player.sprite, 1);
 		}
 
@@ -363,7 +273,7 @@ public:
 
 		// render bullets
 		for (auto& bullet : bullets) {
-			FillRect(bullet.position, { kBulletWidth, kBulletHeight }, olc::Pixel(255,0,0));
+			FillRect(bullet.position, bullet.getDimensions(), olc::Pixel(255,0,0));
 		}
 
 		// render score
@@ -376,43 +286,21 @@ public:
 	}
 
 	void EmitPlayerBullet() {
-		Bullet bullet;
+		actor::Bullet bullet;
 		bullet.position = player.position;
 
 		// adjust position for center of ship
 		bullet.position.x += player.sprite->width / 2;
 
 		// adjust position for center of bullet
-		bullet.position.x -= kBulletWidth / 2;
+		bullet.position.x -= bullet.getDimensions().x / 2;
 
 		bullet.velocity = { 0, -kSpeedBullet };
 
 		bullets.push_back(bullet);
 	}
 
-	void SpawnParticles(const olc::vf2d& position) {
-		
-		// starting at position
 
-		for (int i = 0; i < 100; i++) {
-
-			// random velocity
-			olc::vf2d velocity = olc::vf2d{ float(rand() % 0x7ff) - 0x7ff/2.0f, float(rand() % 0x7ff) - 0x7ff/2.0f } * (400.0f / float(0x7ff));
-
-			// random lifespan
-			float lifespan = (rand() % 0x7ff) * ( 3.0f / float(0x7ff));
-
-			// fading out over time
-
-			Particle particle;
-			particle.position = position;
-			particle.lifespan = lifespan;
-			particle.elapsed = 0.0f;
-			particle.velocity = velocity;
-
-			particles.push_back(particle);
-		}
-	}
 };
 
 

@@ -13,6 +13,15 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Source Files\collidable">
+      <UniqueIdentifier>{9e7d1da9-f0a6-4a41-a1ec-89b80998740d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\actor">
+      <UniqueIdentifier>{b89cce7a-4b77-489b-bcb5-160779f6e636}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\vfx">
+      <UniqueIdentifier>{fc457aff-e623-474b-9761-6003f3178324}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="olcPixelGameEngine.h">
@@ -21,9 +30,39 @@
     <ClInclude Include="olcPGEX_Gamepad.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="source\olcPGEX_Gamepad.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\olcPixelGameEngine.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\collidable\CollidableAABB.h">
+      <Filter>Source Files\collidable</Filter>
+    </ClInclude>
+    <ClInclude Include="source\collidable\CollidableSprite.h">
+      <Filter>Source Files\collidable</Filter>
+    </ClInclude>
+    <ClInclude Include="source\actor\Player.h">
+      <Filter>Source Files\actor</Filter>
+    </ClInclude>
+    <ClInclude Include="source\actor\Bullet.h">
+      <Filter>Source Files\actor</Filter>
+    </ClInclude>
+    <ClInclude Include="source\actor\Enemy.h">
+      <Filter>Source Files\actor</Filter>
+    </ClInclude>
+    <ClInclude Include="source\vfx\Particle.h">
+      <Filter>Source Files\vfx</Filter>
+    </ClInclude>
+    <ClInclude Include="source\vfx\Star.h">
+      <Filter>Source Files\vfx</Filter>
+    </ClInclude>
+    <ClInclude Include="source\vfx\ParticleSystem.h">
+      <Filter>Source Files\vfx</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="SpikePixelGameEngine.cpp">
+    <ClCompile Include="source\SpikePixelGameEngine.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
