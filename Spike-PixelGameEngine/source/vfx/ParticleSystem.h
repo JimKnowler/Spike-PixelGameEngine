@@ -24,7 +24,7 @@ namespace vfx {
 		void render(olc::PixelGameEngine& renderer) {
 			// render particles
 			for (auto& particle : particles) {
-				renderer.FillRect(particle.position, { 4, 4 }, olc::Pixel(255, 0, 255, 255 - uint8_t(255.0f * particle.elapsed / particle.lifespan)));
+				renderer.FillRect(particle.position, { 4, 4 }, olc::Pixel(particle.r, particle.g, particle.b, 255 - uint8_t(255.0f * particle.elapsed / particle.lifespan)));
 			}
 		}
 
@@ -52,6 +52,10 @@ namespace vfx {
 				particle.lifespan = lifespan;
 				particle.elapsed = 0.0f;
 				particle.velocity = velocity;
+
+				particle.r = rand() % 255;
+				particle.g = rand() % 255;
+				particle.b = rand() % 255;
 
 				particles.push_back(particle);
 			}

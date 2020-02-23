@@ -8,5 +8,9 @@ namespace vfx {
 		float elapsed;
 		olc::vf2d velocity;
 		olc::vf2d position;
+
+		uint8_t r;
+		uint8_t g;
+		uint8_t b;
 	};
 }
