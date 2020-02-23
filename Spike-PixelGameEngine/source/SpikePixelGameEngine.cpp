@@ -132,18 +132,22 @@ public:
 		
 		if (GetKey(olc::LEFT).bHeld || gamepad.getButton(olc::GPButtons::DPAD_L).bHeld) {
 			player.position.x -= kSpeedShip * fElapsedTime;
-		}
-
-		if (GetKey(olc::RIGHT).bHeld || gamepad.getButton(olc::GPButtons::DPAD_R).bHeld) {
+		} else if (GetKey(olc::RIGHT).bHeld || gamepad.getButton(olc::GPButtons::DPAD_R).bHeld) {
 			player.position.x += kSpeedShip * fElapsedTime;
+		}
+		else {
+			float fx = gamepad.getAxis(olc::GPAxes::LX);
+			player.position.x += fx * kSpeedShip * fElapsedTime;
 		}
 
 		if (GetKey(olc::UP).bHeld || gamepad.getButton(olc::GPButtons::DPAD_U).bHeld) {
 			player.position.y -= kSpeedShip * fElapsedTime;
-		}
-
-		if (GetKey(olc::DOWN).bHeld || gamepad.getButton(olc::GPButtons::DPAD_D).bHeld) {
+		} else if (GetKey(olc::DOWN).bHeld || gamepad.getButton(olc::GPButtons::DPAD_D).bHeld) {
 			player.position.y += kSpeedShip * fElapsedTime;
+		}
+		else {
+			float fy = gamepad.getAxis(olc::GPAxes::LY);
+			player.position.y += fy * kSpeedShip * fElapsedTime;
 		}
 
 		player.position.x = std::clamp(player.position.x, 0.0f, float(ScreenWidth() - player.sprite->width));
