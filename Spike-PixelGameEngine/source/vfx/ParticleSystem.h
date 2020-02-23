@@ -27,14 +27,23 @@ namespace vfx {
 				renderer.FillRect(particle.position, { 4, 4 }, olc::Pixel(255, 0, 255, 255 - uint8_t(255.0f * particle.elapsed / particle.lifespan)));
 			}
 		}
+
 		void spawnExplosion(const olc::vf2d& position) {
 			for (int i = 0; i < 100; i++) {
 
 				// random velocity
-				olc::vf2d velocity = olc::vf2d{ float(rand() % 0x7ff) - 0x7ff / 2.0f, float(rand() % 0x7ff) - 0x7ff / 2.0f } *(400.0f / float(0x7ff));
+				
+				const float MATH_PI = 3.142f;
+				const float angle = MATH_PI * 2.0f * randNormalisedFloat();
+				const float speed = float(rand() % 400);
+				
+				olc::vf2d velocity = olc::vf2d{
+					cosf(angle) * speed,
+					sinf(angle) * speed
+				};
 
 				// random lifespan
-				float lifespan = (rand() % 0x7ff) * (3.0f / float(0x7ff));
+				float lifespan = 3.0f * randNormalisedFloat();
 
 				// fading out over time
 
@@ -48,6 +57,11 @@ namespace vfx {
 			}
 		}
 	private:
+		float randNormalisedFloat() {
+			// floating point value between 0.0f and 1.0f
+			return float(rand()) / float(RAND_MAX);
+		}
+
 		std::list<Particle> particles;
 
 	};
