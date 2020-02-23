@@ -60,6 +60,9 @@
     <ClInclude Include="source\vfx\ParticleSystem.h">
       <Filter>Source Files\vfx</Filter>
     </ClInclude>
+    <ClInclude Include="source\vfx\StarField.h">
+      <Filter>Source Files\vfx</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\SpikePixelGameEngine.cpp">

@@ -31,6 +31,7 @@
     <ClInclude Include="source\vfx\Particle.h" />
     <ClInclude Include="source\vfx\ParticleSystem.h" />
     <ClInclude Include="source\vfx\Star.h" />
+    <ClInclude Include="source\vfx\StarField.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\SpikePixelGameEngine.cpp" />

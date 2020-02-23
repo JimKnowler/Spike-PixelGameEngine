@@ -10,11 +10,10 @@
 #include "actor/Bullet.h"
 #include "actor/Enemy.h"
 
-#include "vfx/Star.h"
+#include "vfx/StarField.h"
 #include "vfx/ParticleSystem.h"
 
 namespace {
-	const uint32_t kNumStars = 100;
 	const float kSpeedShip = 200.0f;
 	const float kSpeedBullet = 1000.0f;
 	const float kMinTimeBetweenBullets = 0.1f;
@@ -31,7 +30,7 @@ public:
 	}
 
 	actor::Player player;
-	vfx::Star stars[kNumStars];
+	vfx::StarField starField;
 	std::list<actor::Bullet> bullets;
 	std::list<actor::Enemy> enemies;
 
@@ -78,26 +77,7 @@ public:
 	}
 
 	void CreateStars() {
-		for (auto& star : stars) {
-			star.position = { float(rand() % ScreenWidth()), float(rand() % ScreenHeight()) };
-			switch (rand() % 3) {
-			case 0:
-				star.pixel = olc::Pixel(255, 255, 255);
-				star.speed = 50.0f + float(rand() % 50);
-				star.size = 3;
-				break;
-			case 1:
-				star.pixel = olc::Pixel(180, 180, 180);
-				star.speed = 20.0f + float(rand() % 20);
-				star.size = 2;
-				break;
-			case 2:
-				star.pixel = olc::Pixel(100, 100, 100);
-				star.speed = 10.0f + float(rand() % 10);
-				star.size = 1;
-				break;
-			}
-		}
+		starField.init(*this);
 	}
 
 	void CreateEnemies() {
@@ -133,13 +113,7 @@ public:
 	}
 
 	void UpdateGame(float fElapsedTime) {
-		// animate stars
-		for (auto& star : stars) {
-			star.position.y += star.speed * fElapsedTime;
-			if (star.position.y > ScreenHeight()) {
-				star.position.y -= float(ScreenHeight());
-			}
-		}
+		starField.update(*this, fElapsedTime);
 
 		UpdatePlayer(fElapsedTime);
 
@@ -189,10 +163,8 @@ public:
 				particleSystem.spawnExplosion(center);
 			}
 		}
-	}
 
-	void UpdateBullets(float fElapsedTime) {
-		// trigger bullets
+		// spawn bullet
 		if (GetKey(olc::SPACE).bHeld || gamepad.getButton(olc::GPButtons::FACE_D).bHeld) {
 			if (player.timeSinceLastShot >= kMinTimeBetweenBullets) {
 				player.timeSinceLastShot = 0.0f;
@@ -200,7 +172,9 @@ public:
 				EmitPlayerBullet();
 			}
 		}
-		
+	}
+
+	void UpdateBullets(float fElapsedTime) {		
 		// update position of bullets
 		for (auto& bullet : bullets) {
 			bullet.position += (bullet.velocity * fElapsedTime);
@@ -249,10 +223,7 @@ public:
 		// clear screen
 		FillRect({ 0,0 }, { ScreenWidth(), ScreenHeight() }, olc::BLACK);
 		
-		// render stars
-		for (auto& star : stars) {
-			FillRect(star.position, {star.size, star.size}, star.pixel);
-		}
+		starField.render(*this);
 
 		SetPixelMode(olc::Pixel::ALPHA);
 
@@ -269,7 +240,6 @@ public:
 		}
 
 		SetPixelMode(olc::Pixel::NORMAL);
-
 
 		// render bullets
 		for (auto& bullet : bullets) {
