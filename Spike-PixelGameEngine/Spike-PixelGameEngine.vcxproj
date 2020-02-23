@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="olcPGEX_Gamepad.h" />
     <ClInclude Include="olcPixelGameEngine.h" />
   </ItemGroup>
   <ItemGroup>
