@@ -189,7 +189,7 @@ public:
 			}
 		}
 
-		// spawn bullet
+		// fire a bullet
 		if (GetKey(olc::SPACE).bHeld || gamepad.getButton(olc::GPButtons::FACE_D).bHeld) {
 			if (player.timeSinceLastShot >= kMinTimeBetweenBullets) {
 				player.timeSinceLastShot = 0.0f;
@@ -281,17 +281,45 @@ public:
 
 	void EmitPlayerBullet() {
 		actor::Bullet bullet;
-		bullet.position = player.position;
+
+		// position that bullets start from
+		olc::vf2d position = player.position;
 
 		// adjust position for center of ship
-		bullet.position.x += player.sprite->width / 2;
+		const float kHalfPlayerWidth = float(player.sprite->width / 2);
+		position.x += kHalfPlayerWidth;
 
 		// adjust position for center of bullet
-		bullet.position.x -= bullet.getDimensions().x / 2;
+		position.x -= bullet.getDimensions().x / 2;
 
-		bullet.velocity = { 0, -kSpeedBullet };
+		if (true) {
+			// bullet going forward
+			bullet.position = position;
+			bullet.velocity = { 0, -kSpeedBullet };
+			bullets.push_back(bullet);
+		}
 
-		bullets.push_back(bullet);
+		if (false) {
+			// left & right secondary bullets going forward
+			bullet.position = position;
+			bullet.position.x += kHalfPlayerWidth / 2;
+			bullets.push_back(bullet);
+
+			bullet.position = position;
+			bullet.position.x -= kHalfPlayerWidth / 2;
+			bullets.push_back(bullet);
+		}
+
+		if (false) {
+			// left & right diagonal bullets
+			bullet.position = position;
+			
+			bullet.velocity = { -kSpeedBullet, -kSpeedBullet };
+			bullets.push_back(bullet);
+			
+			bullet.velocity = { kSpeedBullet, -kSpeedBullet };
+			bullets.push_back(bullet);
+		}
 	}
 };
 
