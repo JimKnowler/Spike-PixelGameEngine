@@ -17,8 +17,15 @@ namespace {
 	const float kSpeedShip = 300;
 	const float kSpeedBullet = 1000.0f;
 	const float kMinTimeBetweenBullets = 0.1f;
-	const uint32_t kScreenWidth = 600;
-	const uint32_t kScreenHeight = 400;
+	const uint32_t kScreenWidth = 800;
+	const uint32_t kScreenHeight = 600;
+
+	const char* kFilePathPlayer = "gfx//arwing_40pix.png";
+	const char* kFilePathEnemy = "gfx//enemy_40pix.png";
+
+	const float kGameDuration = 240.0f;
+
+	const int kMaxScore = 50;
 }
 
 class SpikePixelGame : public olc::PixelGameEngine
@@ -34,10 +41,12 @@ public:
 	std::list<actor::Bullet> bullets;
 	std::list<actor::Enemy> enemies;
 
+
 	struct Game {
-		Game() : score(0) {}
+		Game() {}
 
 		int score;
+		float progress;
 	};
 
 	Game game;
@@ -70,7 +79,7 @@ public:
 	}
 
 	void CreatePlayer() {
-		player.sprite = new olc::Sprite("gfx//arwing_40pix.png");
+		player.sprite = new olc::Sprite(kFilePathPlayer);
 	}
 
 	void CreateStars() {
@@ -88,7 +97,7 @@ public:
 		for (int x = 0; x < kNumEnemiesX; x++) {
 			for (int y = 0; y < kNumEnemiesY; y++) {
 				actor::Enemy enemy;
-				enemy.sprite = new olc::Sprite("gfx//enemy_40pix.png");
+				enemy.sprite = new olc::Sprite(kFilePathEnemy);
 				enemy.position = { kEnemySpacingX * (x + 1), kEnemyStartY + (kEnemySpacingY * y) };
 				enemy.position.x -= (enemy.sprite->width / 2.0f);
 				enemies.push_back(enemy);
@@ -113,6 +122,7 @@ public:
 		player.state = actor::Player::State::ALIVE;
 
 		game.score = 0;
+		game.progress = 0;
 	}
 
 	void UpdateGame(float fElapsedTime) {
@@ -120,7 +130,13 @@ public:
 			Restart();
 		}
 
-		const int kMaxScore = 50;
+		game.progress += fElapsedTime;
+		
+		if (game.progress > kGameDuration) {
+			// end of the game
+			Restart();
+		}
+
 		const float progressNormalised = float(std::min(game.score, kMaxScore)) / float(kMaxScore);
 		
 		float starFieldSpeed = 1.0f + (9.0f * progressNormalised);
@@ -277,6 +293,13 @@ public:
 		strScore += buffer;
 
 		DrawString({ 10,10 }, strScore);
+
+		// render progress
+		DrawString({ 10,20 }, "progress: ");
+		const int kBarFrameWidth = kScreenWidth - 122;
+		const int kBarWidth = int( float(kBarFrameWidth) * game.progress / kGameDuration);
+		DrawRect({ 100,20 }, { kBarFrameWidth + 2, 10 }, olc::WHITE);
+		FillRect({ 102,21 }, { kBarWidth, 8 }, olc::RED);
 	}
 
 	void EmitPlayerBullet() {
@@ -326,7 +349,7 @@ public:
 int main()
 {
 	SpikePixelGame demo;
-	if (demo.Construct(kScreenWidth, kScreenHeight, 2, 2))
+	if (demo.Construct(kScreenWidth, kScreenHeight, 1, 1))
 		demo.Start();
 
 	return 0;
