@@ -14,7 +14,7 @@
 #include "vfx/ParticleSystem.h"
 
 namespace {
-	const float kSpeedShip = 200.0f;
+	const float kSpeedShip = 300;
 	const float kSpeedBullet = 1000.0f;
 	const float kMinTimeBetweenBullets = 0.1f;
 	const uint32_t kScreenWidth = 600;
@@ -142,26 +142,35 @@ public:
 			gamepad.poll();
 		}
 		
+		// set dx,dy as normalised directional vector 
+		float dx = 0.0f;
+		float dy = 0.0f;
+
 		if (GetKey(olc::LEFT).bHeld || gamepad.getButton(olc::GPButtons::DPAD_L).bHeld) {
-			player.position.x -= kSpeedShip * fElapsedTime;
+			dx = -1;
 		} else if (GetKey(olc::RIGHT).bHeld || gamepad.getButton(olc::GPButtons::DPAD_R).bHeld) {
-			player.position.x += kSpeedShip * fElapsedTime;
-		}
-		else {
-			float fx = gamepad.getAxis(olc::GPAxes::LX);
-			player.position.x += fx * kSpeedShip * fElapsedTime;
+			dx = 1;
+		} else {
+			dx = gamepad.getAxis(olc::GPAxes::LX);
 		}
 
 		if (GetKey(olc::UP).bHeld || gamepad.getButton(olc::GPButtons::DPAD_U).bHeld) {
-			player.position.y -= kSpeedShip * fElapsedTime;
+			dy = -1;
 		} else if (GetKey(olc::DOWN).bHeld || gamepad.getButton(olc::GPButtons::DPAD_D).bHeld) {
-			player.position.y += kSpeedShip * fElapsedTime;
-		}
-		else {
-			float fy = gamepad.getAxis(olc::GPAxes::LY);
-			player.position.y += fy * kSpeedShip * fElapsedTime;
+			dy = 1;
+		} else {
+			dy = gamepad.getAxis(olc::GPAxes::LY);
 		}
 
+		// multiple normalised value by itself to get exponential response curve
+		dx *= fabs(dx);
+		dy *= fabs(dy);
+
+		// update the player position
+		player.position.x += dx * kSpeedShip * fElapsedTime;
+		player.position.y += dy * kSpeedShip * fElapsedTime;
+
+		// clamp player position to the visible screen
 		player.position.x = std::clamp(player.position.x, 0.0f, float(ScreenWidth() - player.sprite->width));
 		player.position.y = std::clamp(player.position.y, 0.0f, float(ScreenHeight() - player.sprite->height));
 
@@ -218,8 +227,7 @@ public:
 				enemies.erase(it);
 
 				return true;
-			}
-			else {
+			} else {
 				it++;
 			}
 		}
@@ -285,10 +293,7 @@ public:
 
 		bullets.push_back(bullet);
 	}
-
-
 };
-
 
 int main()
 {
