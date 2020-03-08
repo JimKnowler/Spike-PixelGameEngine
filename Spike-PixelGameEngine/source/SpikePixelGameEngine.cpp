@@ -26,6 +26,18 @@ namespace {
 	const float kGameDuration = 240.0f;
 
 	const int kMaxScore = 50;
+
+	enum class FiringMode : int {
+		kSingleForward = 0,
+		kDoubleForward,
+		kDoubleDiagonal,
+		kDoubleSideways,
+		kSingleBackwards,
+
+		kCount
+	};
+
+	FiringMode firingMode;
 }
 
 class SpikePixelGame : public olc::PixelGameEngine
@@ -123,6 +135,8 @@ public:
 
 		game.score = 0;
 		game.progress = 0;
+
+		firingMode = FiringMode::kSingleForward;
 	}
 
 	void UpdateGame(float fElapsedTime) {
@@ -157,24 +171,28 @@ public:
 		if (gamepad.valid) {
 			gamepad.poll();
 		}
-		
+
 		// set dx,dy as normalised directional vector 
 		float dx = 0.0f;
 		float dy = 0.0f;
 
 		if (GetKey(olc::LEFT).bHeld || gamepad.getButton(olc::GPButtons::DPAD_L).bHeld) {
 			dx = -1;
-		} else if (GetKey(olc::RIGHT).bHeld || gamepad.getButton(olc::GPButtons::DPAD_R).bHeld) {
+		}
+		else if (GetKey(olc::RIGHT).bHeld || gamepad.getButton(olc::GPButtons::DPAD_R).bHeld) {
 			dx = 1;
-		} else {
+		}
+		else {
 			dx = gamepad.getAxis(olc::GPAxes::LX);
 		}
 
 		if (GetKey(olc::UP).bHeld || gamepad.getButton(olc::GPButtons::DPAD_U).bHeld) {
 			dy = -1;
-		} else if (GetKey(olc::DOWN).bHeld || gamepad.getButton(olc::GPButtons::DPAD_D).bHeld) {
+		}
+		else if (GetKey(olc::DOWN).bHeld || gamepad.getButton(olc::GPButtons::DPAD_D).bHeld) {
 			dy = 1;
-		} else {
+		}
+		else {
 			dy = gamepad.getAxis(olc::GPAxes::LY);
 		}
 
@@ -212,6 +230,12 @@ public:
 
 				EmitPlayerBullet();
 			}
+		}
+
+		// switch gun
+		if (GetKey(olc::F).bReleased || gamepad.getButton(olc::GPButtons::FACE_R).bPressed) {
+			firingMode = FiringMode((int(firingMode) + 1) % int(FiringMode::kCount));
+			printf("firingMode is %d\n", firingMode);
 		}
 	}
 
@@ -300,6 +324,17 @@ public:
 		const int kBarWidth = int( float(kBarFrameWidth) * game.progress / kGameDuration);
 		DrawRect({ 100,20 }, { kBarFrameWidth + 2, 10 }, olc::WHITE);
 		FillRect({ 102,21 }, { kBarWidth, 8 }, olc::RED);
+
+		// render firing mode
+		const std::string kFiringModeStrings[] = {
+			"Single Shot",
+			"Double Shot",
+			"Double Diagonal",
+			"Double Sideways",
+			"Single Backwards"
+		};
+
+		DrawString({ 100,10 }, kFiringModeStrings[int(firingMode)]);
 	}
 
 	void EmitPlayerBullet() {
@@ -315,33 +350,55 @@ public:
 		// adjust position for center of bullet
 		position.x -= bullet.getDimensions().x / 2;
 
-		if (true) {
-			// bullet going forward
-			bullet.position = position;
-			bullet.velocity = { 0, -kSpeedBullet };
-			bullets.push_back(bullet);
-		}
+		switch (firingMode) {
+			case FiringMode::kSingleForward:
+				// bullet going forward
+				bullet.position = position;
+				bullet.velocity = { 0, -kSpeedBullet };
+				bullets.push_back(bullet);
+				break;
 
-		if (false) {
-			// left & right secondary bullets going forward
-			bullet.position = position;
-			bullet.position.x += kHalfPlayerWidth / 2;
-			bullets.push_back(bullet);
+			case FiringMode::kDoubleForward:
+				// left & right secondary bullets going forward
+				bullet.velocity = { 0, -kSpeedBullet };
 
-			bullet.position = position;
-			bullet.position.x -= kHalfPlayerWidth / 2;
-			bullets.push_back(bullet);
-		}
+				bullet.position = position;
+				bullet.position.x += kHalfPlayerWidth / 2;
+				bullets.push_back(bullet);
 
-		if (false) {
-			// left & right diagonal bullets
-			bullet.position = position;
-			
-			bullet.velocity = { -kSpeedBullet, -kSpeedBullet };
-			bullets.push_back(bullet);
-			
-			bullet.velocity = { kSpeedBullet, -kSpeedBullet };
-			bullets.push_back(bullet);
+				bullet.position = position;
+				bullet.position.x -= kHalfPlayerWidth / 2;
+				bullets.push_back(bullet);
+				break;
+
+			case FiringMode::kDoubleDiagonal:
+				// left & right diagonal bullets
+				bullet.position = position;
+				
+				bullet.velocity = { -kSpeedBullet, -kSpeedBullet };
+				bullets.push_back(bullet);
+				
+				bullet.velocity = { kSpeedBullet, -kSpeedBullet };
+				bullets.push_back(bullet);
+				break;
+
+			case FiringMode::kDoubleSideways:
+				// left & right sideways bullets
+				bullet.position = position;
+
+				bullet.velocity = { -kSpeedBullet, 0 };
+				bullets.push_back(bullet);
+
+				bullet.velocity = { kSpeedBullet, 0 };
+				bullets.push_back(bullet);
+				break;
+
+			case FiringMode::kSingleBackwards:
+				// single bullet going backwards
+				bullet.position = position;
+				bullet.velocity = { 0, kSpeedBullet };
+				bullets.push_back(bullet);
+				break;
 		}
 	}
 };
