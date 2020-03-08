@@ -1,6 +1,0 @@
-momentum of ship
-restart button
-enemies that move
-better sprite for enemy
-player shouldn't be able to shoot when dead
-emit particles from a circle
