@@ -26,6 +26,8 @@
     <ClInclude Include="source\actor\Player.h" />
     <ClInclude Include="source\collidable\CollidableAABB.h" />
     <ClInclude Include="source\collidable\CollidableSprite.h" />
+    <ClInclude Include="source\game\EnemyPath.h" />
+    <ClInclude Include="source\game\EnemyWave.h" />
     <ClInclude Include="source\olcPGEX_Gamepad.h" />
     <ClInclude Include="source\olcPixelGameEngine.h" />
     <ClInclude Include="source\vfx\Particle.h" />
@@ -34,6 +36,8 @@
     <ClInclude Include="source\vfx\StarField.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="source\game\EnemyPath.cpp" />
+    <ClCompile Include="source\game\EnemyWave.cpp" />
     <ClCompile Include="source\SpikePixelGameEngine.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

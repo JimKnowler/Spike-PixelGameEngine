@@ -22,6 +22,9 @@
     <Filter Include="Source Files\vfx">
       <UniqueIdentifier>{fc457aff-e623-474b-9761-6003f3178324}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\game">
+      <UniqueIdentifier>{9ba4de10-edbd-4000-bad7-6a7cef82a931}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="olcPixelGameEngine.h">
@@ -63,10 +66,22 @@
     <ClInclude Include="source\vfx\StarField.h">
       <Filter>Source Files\vfx</Filter>
     </ClInclude>
+    <ClInclude Include="source\game\EnemyPath.h">
+      <Filter>Source Files\game</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\EnemyWave.h">
+      <Filter>Source Files\game</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\SpikePixelGameEngine.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\game\EnemyPath.cpp">
+      <Filter>Source Files\game</Filter>
+    </ClCompile>
+    <ClCompile Include="source\game\EnemyWave.cpp">
+      <Filter>Source Files\game</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
