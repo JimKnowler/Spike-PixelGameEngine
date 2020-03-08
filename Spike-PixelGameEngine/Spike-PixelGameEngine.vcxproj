@@ -28,6 +28,7 @@
     <ClInclude Include="source\collidable\CollidableSprite.h" />
     <ClInclude Include="source\game\EnemyPath.h" />
     <ClInclude Include="source\game\EnemyWave.h" />
+    <ClInclude Include="source\game\Level.h" />
     <ClInclude Include="source\olcPGEX_Gamepad.h" />
     <ClInclude Include="source\olcPixelGameEngine.h" />
     <ClInclude Include="source\vfx\Particle.h" />
@@ -36,8 +37,8 @@
     <ClInclude Include="source\vfx\StarField.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="source\game\EnemyPath.cpp" />
     <ClCompile Include="source\game\EnemyWave.cpp" />
+    <ClCompile Include="source\game\Level.cpp" />
     <ClCompile Include="source\SpikePixelGameEngine.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
@@ -111,6 +112,7 @@
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <AdditionalIncludeDirectories>./source</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -141,6 +143,7 @@
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <AdditionalIncludeDirectories>./source</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>

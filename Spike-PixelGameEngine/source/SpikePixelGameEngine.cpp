@@ -13,6 +13,8 @@
 #include "vfx/StarField.h"
 #include "vfx/ParticleSystem.h"
 
+#include "game/Level.h"
+
 namespace {
 	const float kSpeedShip = 300;
 	const float kSpeedBullet = 1000.0f;
@@ -58,7 +60,12 @@ public:
 		Game() {}
 
 		int score;
-		float progress;
+
+		game::Level::Config levelConfig = {
+
+		};
+
+		game::Level level = game::Level(levelConfig);
 	};
 
 	Game game;
@@ -134,7 +141,8 @@ public:
 		player.state = actor::Player::State::ALIVE;
 
 		game.score = 0;
-		game.progress = 0;
+
+		game.level.restart();
 
 		firingMode = FiringMode::kSingleForward;
 	}
@@ -144,15 +152,17 @@ public:
 			Restart();
 		}
 
-		game.progress += fElapsedTime;
-		
-		if (game.progress > kGameDuration) {
+		game.level.update(fElapsedTime);
+
+		const float progress = game.level.getProgress();
+
+		if (progress > kGameDuration) {
 			// end of the game
 			Restart();
 		}
 
 		const float progressNormalised = float(std::min(game.score, kMaxScore)) / float(kMaxScore);
-		
+
 		float starFieldSpeed = 1.0f + (9.0f * progressNormalised);
 
 		starField.update(*this, fElapsedTime * starFieldSpeed);
@@ -239,7 +249,7 @@ public:
 		}
 	}
 
-	void UpdateBullets(float fElapsedTime) {		
+	void UpdateBullets(float fElapsedTime) {
 		// update position of bullets
 		for (auto& bullet : bullets) {
 			bullet.position += (bullet.velocity * fElapsedTime);
@@ -267,7 +277,8 @@ public:
 				enemies.erase(it);
 
 				return true;
-			} else {
+			}
+			else {
 				it++;
 			}
 		}
@@ -278,7 +289,7 @@ public:
 	void OnEnemyDestroyed(const actor::Enemy& enemy) {
 		game.score += 1;
 
-		olc::vf2d center = enemy.position + (olc::vf2d{ float(enemy.sprite->width), float(enemy.sprite->height) } * 0.5f);
+		olc::vf2d center = enemy.position + (olc::vf2d{ float(enemy.sprite->width), float(enemy.sprite->height) } *0.5f);
 
 		particleSystem.spawnExplosion(center);
 	}
@@ -286,7 +297,7 @@ public:
 	void RenderGame() {
 		// clear screen
 		FillRect({ 0,0 }, { ScreenWidth(), ScreenHeight() }, olc::BLACK);
-		
+
 		starField.render(*this);
 
 		SetPixelMode(olc::Pixel::ALPHA);
@@ -307,7 +318,7 @@ public:
 
 		// render bullets
 		for (auto& bullet : bullets) {
-			FillRect(bullet.position, bullet.getDimensions(), olc::Pixel(255,0,0));
+			FillRect(bullet.position, bullet.getDimensions(), olc::Pixel(255, 0, 0));
 		}
 
 		// render score
@@ -319,11 +330,13 @@ public:
 		DrawString({ 10,10 }, strScore);
 
 		// render progress
+		const float progress = game.level.getProgress();
+
+
 		DrawString({ 10,20 }, "progress: ");
-		const int kBarFrameWidth = kScreenWidth - 122;
-		const int kBarWidth = int( float(kBarFrameWidth) * game.progress / kGameDuration);
-		DrawRect({ 100,20 }, { kBarFrameWidth + 2, 10 }, olc::WHITE);
-		FillRect({ 102,21 }, { kBarWidth, 8 }, olc::RED);
+
+		const int kBarFrameWidth = kScreenWidth - 120;
+		DrawProgressBar({ 100, 20 }, { kBarFrameWidth, 10 }, olc::WHITE, olc::RED, progress / kGameDuration);
 
 		// render firing mode
 		const std::string kFiringModeStrings[] = {
@@ -335,6 +348,15 @@ public:
 		};
 
 		DrawString({ 100,10 }, kFiringModeStrings[int(firingMode)]);
+	}
+
+	void DrawProgressBar(const olc::vi2d& topLeft, const olc::vi2d& dimensions, olc::Pixel colourFrame, olc::Pixel colourFill, float p) {
+		DrawRect(topLeft, dimensions, colourFrame);
+
+		const olc::vi2d innerTopLeft = { topLeft.x + 1, topLeft.y + 1 };
+		const int kBarWidth = int(float(dimensions.x - 2.0f) * p);
+		const olc::vi2d innerDimensions = { kBarWidth, dimensions.y - 2 };
+		FillRect(innerTopLeft, innerDimensions, colourFill);
 	}
 
 	void EmitPlayerBullet() {
