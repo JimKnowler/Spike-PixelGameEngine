@@ -11,6 +11,7 @@ namespace game {
 		};
 
 		struct Config {
+			float duration;
 			std::vector<TimelineElement> timeline;
 		};
 
@@ -18,12 +19,19 @@ namespace game {
 
 		void restart();
 
-		void update(float fElapsedTime);
+		/// @return true while playing, false when the level has ended
+		bool update(float fElapsedTime);
 
 		/// @brief get elapsed time since the start of the level
 		float getProgress() const;
 
+		/// @brief get the duration of the level
+		float getDuration() const;
+
 	private:
-		float progress;
+		Config config;
+
+		float progress;				// elapsed time since the start of the level
+		int timelineIndex;			// index of next entry in timeline to start
 	};
 }

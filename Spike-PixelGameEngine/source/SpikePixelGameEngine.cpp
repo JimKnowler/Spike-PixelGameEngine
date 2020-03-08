@@ -25,8 +25,6 @@ namespace {
 	const char* kFilePathPlayer = "gfx//arwing_40pix.png";
 	const char* kFilePathEnemy = "gfx//enemy_40pix.png";
 
-	const float kGameDuration = 240.0f;
-
 	const int kMaxScore = 50;
 
 	enum class FiringMode : int {
@@ -62,7 +60,8 @@ public:
 		int score;
 
 		game::Level::Config levelConfig = {
-
+			240.0f,
+			{}
 		};
 
 		game::Level level = game::Level(levelConfig);
@@ -152,14 +151,12 @@ public:
 			Restart();
 		}
 
-		game.level.update(fElapsedTime);
-
-		const float progress = game.level.getProgress();
-
-		if (progress > kGameDuration) {
+		if (!game.level.update(fElapsedTime)) {
 			// end of the game
 			Restart();
 		}
+
+		const float progress = game.level.getProgress();
 
 		const float progressNormalised = float(std::min(game.score, kMaxScore)) / float(kMaxScore);
 
@@ -331,12 +328,12 @@ public:
 
 		// render progress
 		const float progress = game.level.getProgress();
-
+		const float duration = game.level.getDuration();
 
 		DrawString({ 10,20 }, "progress: ");
 
 		const int kBarFrameWidth = kScreenWidth - 120;
-		DrawProgressBar({ 100, 20 }, { kBarFrameWidth, 10 }, olc::WHITE, olc::RED, progress / kGameDuration);
+		DrawProgressBar({ 100, 20 }, { kBarFrameWidth, 10 }, olc::WHITE, olc::RED, progress / duration);
 
 		// render firing mode
 		const std::string kFiringModeStrings[] = {
