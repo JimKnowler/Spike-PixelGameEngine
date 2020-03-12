@@ -315,7 +315,7 @@ public:
 
 		// render bullets
 		for (auto& bullet : bullets) {
-			FillRect(bullet.position, bullet.getDimensions(), olc::Pixel(255, 0, 0));
+			FillRect(bullet.position, bullet.getDimensions(), bullet.colour);
 		}
 
 		// render score
@@ -374,12 +374,14 @@ public:
 				// bullet going forward
 				bullet.position = position;
 				bullet.velocity = { 0, -kSpeedBullet };
+				bullet.colour = olc::Pixel(255, 0, 0);
 				bullets.push_back(bullet);
 				break;
 
 			case FiringMode::kDoubleForward:
 				// left & right secondary bullets going forward
 				bullet.velocity = { 0, -kSpeedBullet };
+				bullet.colour = olc::Pixel(255, 255, 0);
 
 				bullet.position = position;
 				bullet.position.x += kHalfPlayerWidth / 2;
@@ -393,7 +395,8 @@ public:
 			case FiringMode::kDoubleDiagonal:
 				// left & right diagonal bullets
 				bullet.position = position;
-				
+				bullet.colour = olc::Pixel(255, 0, 255);
+
 				bullet.velocity = { -kSpeedBullet, -kSpeedBullet };
 				bullets.push_back(bullet);
 				
@@ -404,6 +407,7 @@ public:
 			case FiringMode::kDoubleSideways:
 				// left & right sideways bullets
 				bullet.position = position;
+				bullet.colour = olc::Pixel(180, 180, 180);
 
 				bullet.velocity = { -kSpeedBullet, 0 };
 				bullets.push_back(bullet);
@@ -413,6 +417,7 @@ public:
 				break;
 
 			case FiringMode::kSingleBackwards:
+				bullet.colour = olc::Pixel(0, 255, 255);
 				// single bullet going backwards
 				bullet.position = position;
 				bullet.velocity = { 0, kSpeedBullet };
